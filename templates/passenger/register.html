@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            background-image : url('/static/login.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        form {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            backdrop-filter: blur(10px) saturate(180%);
+            background-color: rgba(255,255,255,.5);
+            width: 90%;
+            max-width: 400px;
+        }
+        label {
+            text-align: left;
+            margin-left: 10px;
+            font-size: 16px;
+        }
+        input, button {
+            text-align: left;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007BFF;
+            text-align: center;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        label {
+            text-align: left;
+            margin-left: 10px;
+            font-size: 16px;
+        }        
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <form action="login" method="POST">
+            <h1>Register</h1>
+            <label for="username">Username</label>
+            <input type="text" name="username" placeholder="Username"><br>
+            <label for="email">Email</label>
+            <input type="email" name="email" placeholder="Email"><br>
+            <label for="name">Name</label>
+            <input type="text" name="name" placeholder="Name"><br>
+            <label for="phone">Phone</label>
+            <input type="text" name="phone" placeholder="Phone"><br>
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="Password"><br>
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" name="confirm_password" placeholder="Confirm Password"><br>
+            {% if error_message %}
+                <div class="error">{{ error_message }}</div>
+            {% endif %}
+            <button type="submit">Login</button><br>
+            Already have an account?
+            <a href="login">Login</a>
+        </form>
+    </div>
+</body>
+</html>
