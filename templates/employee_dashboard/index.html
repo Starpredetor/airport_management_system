@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>Total Flights</h3>
+                <p class="h2 text-primary">{{ flights|length if flights else 0 }}</p>
+                <a href="{{ url_for('flights') }}" class="btn btn-outline-primary mt-2">Manage Flights</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>Today's Flights</h3>
+                <p class="h2 text-success">{{ today_flights|length if today_flights else 0 }}</p>
+                <a href="{{ url_for('flights') }}" class="btn btn-outline-success mt-2">View Schedule</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>Quick Actions</h3>
+                <div class="btn-group mt-2">
+                    <a href="{{ url_for('add_flight') }}" class="btn btn-outline-primary">Add Flight</a>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reportsModal">Reports</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Recent Flights</h4>
+                <a href="{{ url_for('flights') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Flight #</th>
+                                <th>Route</th>
+                                <th>Departure</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flight in flights[:5] %}
+                            <tr>
+                                <td>{{ flight[1] }}</td>
+                                <td>{{ flight[3] }} → {{ flight[4] }}</td>
+                                <td>{{ flight[5] }}</td>
+                                <td><span class="badge bg-success">On Time</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary">Edit</button>
+                                        <a href="{{ url_for('delete_flight', f_id=flight[0]) }}" 
+                                           class="btn btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this flight?')">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Quick Stats</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="flightStats"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reports Modal -->
+<div class="modal fade" id="reportsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="report-form">
+                    <div class="mb-3">
+                        <label class="form-label">Report Type</label>
+                        <select class="form-select">
+                            <option>Flight Schedule</option>
+                            <option>Passenger List</option>
+                            <option>Revenue Report</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control">
+                            <span class="input-group-text">to</span>
+                            <input type="date" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Generate Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -33,6 +33,9 @@ MANIFEST
 *.spec
 *.db
 
+flask_session/
+backup/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

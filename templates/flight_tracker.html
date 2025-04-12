@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Flight Tracker{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .flight-info {
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .flight-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+    .status-scheduled { background: #e3f2fd; color: #1976d2; }
+    .status-in-air { background: #e8f5e9; color: #2e7d32; }
+    .status-landed { background: #f5f5f5; color: #616161; }
+    .status-delayed { background: #fff3e0; color: #f57c00; }
+    .plane-icon {
+        font-size: 24px;
+        text-shadow: 2px 2px 2px rgba(0,0,0,0.3);
+    }
+    .error-message {
+        display: none;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 8px;
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Live Flight Map</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map"></div>
+                </div>
+            </div>
+            <div id="error-message" class="error-message">
+                <strong>Error:</strong> Unable to fetch flight data. Please try again later.
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Active Flights</h4>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    <div id="active-flights"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Airport coordinates (latitude, longitude)
+    const airports = {
+        'Mumbai': [19.0896, 72.8656],
+        'Delhi': [28.5562, 77.1000],
+        'Bangalore': [12.9716, 77.5946],
+        'Chennai': [13.0827, 80.2707],
+        'Hyderabad': [17.2403, 78.4294],
+        'Kolkata': [22.6520, 88.4463],
+        'Dubai': [25.2532, 55.3657],
+        'Doha': [25.2867, 51.5333],
+        'Singapore': [1.3644, 103.9915],
+        'London': [51.4700, -0.4543],
+        'Frankfurt': [50.0379, 8.5622]
+    };
+
+    // Initialize map
+    const map = L.map('map').setView([20.5937, 78.9629], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: 'OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Custom airplane icon
+    const planeIcon = L.divIcon({
+        html: '✈️',
+        className: 'plane-icon',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    // Flight markers and paths
+    const flightMarkers = {};
+    const flightPaths = {};
+    const flightInfo = {};
+
+    // Update flight positions
+    function updateFlights() {
+        fetch('/get_active_flights')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(flights => {
+                if (flights.error) {
+                    throw new Error(flights.error);
+                }
+
+                document.getElementById('error-message').style.display = 'none';
+                const activeFlightsHtml = [];
+                
+                // Remove old markers and paths
+                Object.values(flightMarkers).forEach(marker => map.removeLayer(marker));
+                Object.values(flightPaths).forEach(path => map.removeLayer(path));
+                
+                flights.forEach(flight => {
+                    const source = airports[flight.source];
+                    const destination = airports[flight.destination];
+                    const progress = flight.progress;
+                    
+                    if (source && destination) {
+                        // Calculate current position
+                        const lat = source[0] + (destination[0] - source[0]) * progress;
+                        const lng = source[1] + (destination[1] - source[1]) * progress;
+                        
+                        // Create or update marker
+                        flightMarkers[flight.flight_number] = L.marker([lat, lng], {icon: planeIcon})
+                            .bindPopup(`${flight.flight_name} (${flight.flight_number})<br>
+                                      ${flight.source} → ${flight.destination}<br>
+                                      Status: ${flight.status}`)
+                            .addTo(map);
+                        
+                        // Draw flight path
+                        flightPaths[flight.flight_number] = L.polyline([source, destination], {
+                            color: '#3388ff',
+                            weight: 2,
+                            opacity: 0.6,
+                            dashArray: '5, 10'
+                        }).addTo(map);
+
+                        // Update flight info panel
+                        const statusClass = 
+                            flight.status === 'In Air' ? 'status-in-air' :
+                            flight.status === 'Scheduled' ? 'status-scheduled' :
+                            flight.status === 'Landed' ? 'status-landed' : 
+                            'status-delayed';
+
+                        activeFlightsHtml.push(`
+                            <div class="flight-info">
+                                <h5>${flight.flight_name} (${flight.flight_number})</h5>
+                                <p class="mb-1">
+                                    <span class="flight-status ${statusClass}">${flight.status}</span>
+                                </p>
+                                <p class="mb-1">${flight.source} → ${flight.destination}</p>
+                                <p class="mb-1">Departure: ${flight.departure}</p>
+                                <p class="mb-0">Arrival: ${flight.arrival}</p>
+                            </div>
+                        `);
+                    }
+                });
+
+                document.getElementById('active-flights').innerHTML = 
+                    activeFlightsHtml.length ? activeFlightsHtml.join('') : '<p class="text-muted text-center mt-3">No active flights at the moment</p>';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').style.display = 'block';
+            });
+    }
+
+    // Update every 10 seconds
+    updateFlights();
+    setInterval(updateFlights, 10000);
+</script>
+{% endblock %}

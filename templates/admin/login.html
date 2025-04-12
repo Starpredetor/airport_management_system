@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Passenger Login{% endblock %}
+{% block title %}Admin Login{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="auth-form">
-        <h2 class="text-center mb-4">Passenger Login</h2>
-        {% if error_message %}
-        <div class="alert alert-danger">{{ error_message }}</div>
+        <h2 class="text-center mb-4">Admin Login</h2>
+        {% if message %}
+        <div class="alert alert-danger">{{ message }}</div>
         {% endif %}
-        <form method="POST" action="{{ url_for('login') }}" onsubmit="return validateForm('login-form')" id="login-form">
+        <form method="POST" action="{{ url_for('admin_login') }}" onsubmit="return validateForm('admin-login-form')" id="admin-login-form">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
@@ -22,9 +22,6 @@
                 <button type="submit" class="btn btn-primary">Login</button>
             </div>
         </form>
-        <div class="text-center mt-3">
-            <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
-        </div>
     </div>
 </div>
 {% endblock %}

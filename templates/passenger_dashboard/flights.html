@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Available Flights{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Available Flights</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" id="search-flights" placeholder="Search flights...">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="btn-group float-end" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="domestic">Domestic</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="international">International</button>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="flights-container">
+    {% for flight in flights %}
+    <div class="col-md-6 mb-4 flight-item" 
+         data-flight-name="{{ flight[2] }}" 
+         data-flight-number="{{ flight[1] }}"
+         data-source="{{ flight[3] }}"
+         data-destination="{{ flight[4] }}">
+        <div class="card flight-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ flight[2] }}</h5>
+                <span class="badge bg-primary">Flight #{{ flight[1] }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>From:</strong> {{ flight[3] }}</p>
+                        <p class="mb-0"><strong>Departure:</strong> {{ flight[5] }}</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1"><strong>To:</strong> {{ flight[4] }}</p>
+                        <p class="mb-0"><strong>Arrival:</strong> {{ flight[6] }}</p>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="text-primary mb-0">${{ flight[7] }}</h4>
+                    {% if session.get('role') == 'STAFF' %}
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary edit-flight-btn" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editFlightModal"
+                                    data-flight-id="{{ flight[0] }}"
+                                    data-flight-number="{{ flight[1] }}"
+                                    data-flight-name="{{ flight[2] }}"
+                                    data-source="{{ flight[3] }}"
+                                    data-destination="{{ flight[4] }}"
+                                    data-departure="{{ flight[5] }}"
+                                    data-arrival="{{ flight[6] }}"
+                                    data-price="{{ flight[7] }}">
+                                Edit
+                            </button>
+                            <a href="{{ url_for('delete_flight', f_id=flight[0]) }}" class="btn btn-outline-danger" 
+                               onclick="return confirm('Are you sure you want to delete this flight?')">Delete</a>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('book_flight', f_id=flight[0]) }}" class="btn btn-primary">Book Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Edit Flight Modal -->
+<div class="modal fade" id="editFlightModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Flight</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editFlightForm">
+                    <input type="hidden" id="edit-flight-id">
+                    <div class="mb-3">
+                        <label class="form-label">Flight Number</label>
+                        <input type="text" class="form-control" id="edit-flight-number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Flight Name</label>
+                        <input type="text" class="form-control" id="edit-flight-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Source</label>
+                        <input type="text" class="form-control" id="edit-source" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Destination</label>
+                        <input type="text" class="form-control" id="edit-destination" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Departure</label>
+                        <input type="datetime-local" class="form-control" id="edit-departure" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Arrival</label>
+                        <input type="datetime-local" class="form-control" id="edit-arrival" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" id="edit-price" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveFlightBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if session.get('role') == 'STAFF' %}
+<div class="fixed-bottom p-4">
+    <a href="{{ url_for('add_flight') }}" class="btn btn-primary btn-lg rounded-circle float-end">
+        <i class="bi bi-plus"></i>
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Search functionality
+document.getElementById('search-flights').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const flights = document.querySelectorAll('.flight-item');
+    
+    flights.forEach(flight => {
+        const flightName = flight.dataset.flightName.toLowerCase();
+        const flightNumber = flight.dataset.flightNumber.toLowerCase();
+        const source = flight.dataset.source.toLowerCase();
+        const destination = flight.dataset.destination.toLowerCase();
+        
+        if (flightName.includes(searchTerm) || 
+            flightNumber.includes(searchTerm) || 
+            source.includes(searchTerm) || 
+            destination.includes(searchTerm)) {
+            flight.style.display = '';
+        } else {
+            flight.style.display = 'none';
+        }
+    });
+});
+
+// Flight type filter
+document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        const flights = document.querySelectorAll('.flight-item');
+        
+        flights.forEach(flight => {
+            const source = flight.dataset.source.toLowerCase();
+            const destination = flight.dataset.destination.toLowerCase();
+            
+            if (filter === 'all') {
+                flight.style.display = '';
+            } else if (filter === 'domestic') {
+                // Simple check: if both cities are in the same country (you can enhance this logic)
+                const isDomestic = source.split(',').pop().trim() === destination.split(',').pop().trim();
+                flight.style.display = isDomestic ? '' : 'none';
+            } else if (filter === 'international') {
+                const isInternational = source.split(',').pop().trim() !== destination.split(',').pop().trim();
+                flight.style.display = isInternational ? '' : 'none';
+            }
+        });
+    });
+});
+
+// Edit flight functionality
+document.querySelectorAll('.edit-flight-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const modal = document.getElementById('editFlightModal');
+        const form = modal.querySelector('form');
+        
+        // Fill form with flight data
+        document.getElementById('edit-flight-id').value = this.dataset.flightId;
+        document.getElementById('edit-flight-number').value = this.dataset.flightNumber;
+        document.getElementById('edit-flight-name').value = this.dataset.flightName;
+        document.getElementById('edit-source').value = this.dataset.source;
+        document.getElementById('edit-destination').value = this.dataset.destination;
+        document.getElementById('edit-departure').value = this.dataset.departure;
+        document.getElementById('edit-arrival').value = this.dataset.arrival;
+        document.getElementById('edit-price').value = this.dataset.price;
+    });
+});
+
+document.getElementById('saveFlightBtn').addEventListener('click', function() {
+    const flightId = document.getElementById('edit-flight-id').value;
+    const flightData = {
+        flight_number: document.getElementById('edit-flight-number').value,
+        flight_name: document.getElementById('edit-flight-name').value,
+        source: document.getElementById('edit-source').value,
+        destination: document.getElementById('edit-destination').value,
+        departure: document.getElementById('edit-departure').value,
+        arrival: document.getElementById('edit-arrival').value,
+        price: document.getElementById('edit-price').value
+    };
+    
+    fetch(`/edit_flight/${flightId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(flightData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            window.location.reload();
+        }
+    });
+});
+</script>
+{% endblock %}

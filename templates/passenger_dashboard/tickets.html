@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}My Tickets{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">My Tickets</h2>
+
+<div class="row">
+    {% for ticket in tickets %}
+    <div class="col-md-6 mb-4">
+        <div class="card ticket-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Ticket #{{ ticket[0] }}</h5>
+                    <span class="badge bg-success">Confirmed</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="ticket-details">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Flight ID:</strong> {{ ticket[2] }}</p>
+                            <p class="mb-1"><strong>Travel Date:</strong> {{ ticket[7] }}</p>
+                            <p class="mb-1"><strong>Class:</strong> {{ ticket[4] }}</p>
+                            <p class="mb-1"><strong>Seat:</strong> {{ ticket[5] }}</p>
+                            <p class="mb-1"><strong>Passenger:</strong> {{ ticket[8] }}</p>
+                            <p class="mb-1"><strong>Age:</strong> {{ ticket[9] }}</p>
+                            <p class="mb-0"><strong>Gender:</strong> {{ ticket[10] }}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="mb-1"><strong>Price:</strong> ${{ ticket[3] }}</p>
+                            <p class="mb-0"><strong>Status:</strong> <span class="text-success">Active</span></p>
+                        </div>
+                    </div>
+                    <div class="ticket-actions">
+                        <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print Ticket
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ticketDetailsModal{{ ticket[0] }}">
+                            <i class="bi bi-info-circle"></i> View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Details Modal -->
+    <div class="modal fade" id="ticketDetailsModal{{ ticket[0] }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ticket Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="ticket-info">
+                        <h6>Ticket Information</h6>
+                        <p><strong>Ticket Number:</strong> {{ ticket[0] }}</p>
+                        <p><strong>Flight ID:</strong> {{ ticket[2] }}</p>
+                        <p><strong>Class:</strong> {{ ticket[4] }}</p>
+                        <p><strong>Seat Number:</strong> {{ ticket[5] }}</p>
+                        <p><strong>Price:</strong> ${{ ticket[3] }}</p>
+                    </div>
+                    <hr>
+                    <div class="passenger-info">
+                        <h6>Passenger Information</h6>
+                        <p><strong>Passenger ID:</strong> {{ ticket[1] }}</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">Print Ticket</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h4 class="alert-heading">No Tickets Found!</h4>
+            <p>You haven't booked any tickets yet. Start by browsing our available flights.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{{ url_for('flights') }}" class="btn btn-primary">Browse Flights</a>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

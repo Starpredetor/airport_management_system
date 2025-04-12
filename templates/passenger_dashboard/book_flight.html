@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Book Flight{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Flight Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>{{ flight[2] }}</h5>
+                        <p class="mb-1"><strong>Flight Number:</strong> {{ flight[1] }}</p>
+                        <p class="mb-1"><strong>From:</strong> {{ flight[3] }}</p>
+                        <p class="mb-1"><strong>To:</strong> {{ flight[4] }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Departure:</strong> {{ flight[5] }}</p>
+                        <p class="mb-1"><strong>Arrival:</strong> {{ flight[6] }}</p>
+                        <p class="mb-1"><strong>Base Price:</strong> ${{ flight[7] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Seat Selection</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <strong>Seating Classes:</strong>
+                    <ul class="mb-0">
+                        <li>First Class: Rows 1-2 (Premium seats with extra legroom)</li>
+                        <li>Business Class: Rows 3-4 (Enhanced comfort and service)</li>
+                        <li>Economy Class: Rows 5-6 (Standard seating)</li>
+                    </ul>
+                </div>
+                
+                <div id="seat-map" class="mb-4">
+                    <!-- First Class Section -->
+                    <div class="mb-3">
+                        <h5 class="text-center text-primary">First Class</h5>
+                        <div class="row g-2">
+                            {% for row in range(1, 3) %}
+                            <div class="col-12 mb-2">
+                                <div class="d-flex justify-content-center">
+                                    {% for col in ['A', 'B', 'C', '', 'D', 'E', 'F'] %}
+                                    {% if col %}
+                                    <div class="mx-1">
+                                        <button class="btn btn-outline-primary seat first-class" data-seat="{{ row }}{{ col }}" data-class="First">
+                                            {{ row }}{{ col }}
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="mx-3"></div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Business Class Section -->
+                    <div class="mb-3">
+                        <h5 class="text-center text-success">Business Class</h5>
+                        <div class="row g-2">
+                            {% for row in range(3, 5) %}
+                            <div class="col-12 mb-2">
+                                <div class="d-flex justify-content-center">
+                                    {% for col in ['A', 'B', 'C', '', 'D', 'E', 'F'] %}
+                                    {% if col %}
+                                    <div class="mx-1">
+                                        <button class="btn btn-outline-success seat business-class" data-seat="{{ row }}{{ col }}" data-class="Business">
+                                            {{ row }}{{ col }}
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="mx-3"></div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Economy Class Section -->
+                    <div>
+                        <h5 class="text-center text-secondary">Economy Class</h5>
+                        <div class="row g-2">
+                            {% for row in range(5, 7) %}
+                            <div class="col-12 mb-2">
+                                <div class="d-flex justify-content-center">
+                                    {% for col in ['A', 'B', 'C', '', 'D', 'E', 'F'] %}
+                                    {% if col %}
+                                    <div class="mx-1">
+                                        <button class="btn btn-outline-secondary seat economy-class" data-seat="{{ row }}{{ col }}" data-class="Economy">
+                                            {{ row }}{{ col }}
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="mx-3"></div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mb-3">
+                    <div class="d-inline-block mx-2">
+                        <button class="btn btn-outline-primary btn-sm" disabled>Available</button>
+                    </div>
+                    <div class="d-inline-block mx-2">
+                        <button class="btn btn-primary btn-sm" disabled>Selected</button>
+                    </div>
+                    <div class="d-inline-block mx-2">
+                        <button class="btn btn-secondary btn-sm" disabled>Occupied</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Booking Summary</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('book_flight', f_id=flight[0]) }}" id="booking-form">
+                    <input type="hidden" id="selected-seat" name="seat" required>
+                    
+                    <!-- Travel Date Selection -->
+                    <div class="mb-3">
+                        <label for="travel_date" class="form-label">Travel Date</label>
+                        <input type="date" class="form-control" id="travel_date" name="travel_date" required min="{{ today }}" max="{{ max_date }}">
+                    </div>
+
+                    <!-- Passenger Details -->
+                    <div class="mb-3">
+                        <h5>Passenger Details</h5>
+                        <div class="mb-2">
+                            <label for="passenger_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="passenger_name" name="passenger_name" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="passenger_age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="passenger_age" name="passenger_age" min="0" max="120" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="passenger_gender" class="form-label">Gender</label>
+                            <select class="form-control" id="passenger_gender" name="passenger_gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                                <option value="O">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Selected Seat Class</label>
+                        <input type="text" class="form-control" id="selected-seat-class" readonly>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Price Details</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Base Fare</span>
+                                <span id="base-fare">${{ flight[7] }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Taxes & Fees (10%)</span>
+                                <span id="taxes">${{ flight[7] * 0.1 }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <strong>Total</strong>
+                                <strong id="total-price">${{ flight[7] * 1.1 }}</strong>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <input type="hidden" name="price" id="price-input" value="{{ flight[7] * 1.1 }}">
+                    <input type="hidden" name="class" id="class-input">
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="book-button" disabled>Select a Seat to Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Get flight data from template
+    var flightData = {
+        id: parseInt("{{ flight[0] }}"),
+        basePrice: parseFloat("{{ flight[7] }}")
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get occupied seats for this flight
+        fetch('/get_occupied_seats/' + flightData.id)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.status === 'success') {
+                    data.seats.forEach(function(seat) {
+                        var seatBtn = document.querySelector('[data-seat="' + seat + '"]');
+                        if (seatBtn) {
+                            seatBtn.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-secondary');
+                            seatBtn.classList.add('btn-secondary');
+                            seatBtn.disabled = true;
+                        }
+                    });
+                }
+            });
+
+        // Handle seat selection
+        var seats = document.querySelectorAll('.seat');
+        var selectedSeatInput = document.getElementById('selected-seat');
+        var selectedSeatClass = document.getElementById('selected-seat-class');
+        var classInput = document.getElementById('class-input');
+        var bookButton = document.getElementById('book-button');
+        var selectedSeat = null;
+
+        seats.forEach(function(seat) {
+            seat.addEventListener('click', function() {
+                // Remove selection from previously selected seat
+                if (selectedSeat) {
+                    var prevClass = selectedSeat.classList.contains('first-class') ? 'primary' :
+                                  selectedSeat.classList.contains('business-class') ? 'success' : 'secondary';
+                    selectedSeat.classList.remove('btn-' + prevClass);
+                    selectedSeat.classList.add('btn-outline-' + prevClass);
+                }
+
+                // Select new seat
+                selectedSeat = this;
+                var btnClass = this.classList.contains('first-class') ? 'primary' :
+                             this.classList.contains('business-class') ? 'success' : 'secondary';
+                this.classList.remove('btn-outline-' + btnClass);
+                this.classList.add('btn-' + btnClass);
+
+                // Update form
+                selectedSeatInput.value = this.dataset.seat;
+                selectedSeatClass.value = this.dataset.class + ' Class - Seat ' + this.dataset.seat;
+                classInput.value = this.dataset.class;
+
+                // Update price based on seat class
+                var multiplier = this.dataset.class === 'First' ? 3 :
+                               this.dataset.class === 'Business' ? 2 : 1;
+                var newBase = flightData.basePrice * multiplier;
+                var newTaxes = newBase * 0.1;
+                var newTotal = newBase + newTaxes;
+
+                document.getElementById('base-fare').textContent = '$' + newBase.toFixed(2);
+                document.getElementById('taxes').textContent = '$' + newTaxes.toFixed(2);
+                document.getElementById('total-price').textContent = '$' + newTotal.toFixed(2);
+                document.getElementById('price-input').value = newTotal.toFixed(2);
+
+                // Enable booking
+                bookButton.disabled = false;
+                bookButton.textContent = 'Confirm Booking';
+            });
+        });
+
+        // Form validation
+        var bookingForm = document.getElementById('booking-form');
+        bookingForm.addEventListener('submit', function(e) {
+            if (!selectedSeatInput.value || !classInput.value) {
+                e.preventDefault();
+                alert('Please select a seat before booking.');
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

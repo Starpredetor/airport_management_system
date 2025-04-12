@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Passenger Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>My Bookings</h3>
+                <p class="h2 text-primary">{{ tickets|length if tickets else 0 }}</p>
+                <a href="{{ url_for('tickets') }}" class="btn btn-outline-primary mt-2">View Tickets</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>Available Flights</h3>
+                <p class="h2 text-success">{{ flights|length if flights else 0 }}</p>
+                <a href="{{ url_for('flights') }}" class="btn btn-outline-success mt-2">Browse Flights</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>Profile</h3>
+                <p class="text-muted">{{ session.get('username') }}</p>
+                <button class="btn btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Recent Bookings</h4>
+            </div>
+            <div class="card-body">
+                {% if tickets %}
+                    {% for ticket in tickets[:3] %}
+                    <div class="ticket">
+                        <div class="ticket-header">
+                            <strong>Flight #{{ ticket[2] }}</strong>
+                        </div>
+                        <div>
+                            <p class="mb-1">Class: {{ ticket[4] }}</p>
+                            <p class="mb-1">Seat: {{ ticket[5] }}</p>
+                            <p class="mb-0">Price: ${{ ticket[3] }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent bookings</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Upcoming Flights</h4>
+            </div>
+            <div class="card-body">
+                {% if flights %}
+                    {% for flight in flights[:3] %}
+                    <div class="flight-card">
+                        <h5>{{ flight[2] }}</h5>
+                        <p class="mb-1">From: {{ flight[3] }} To: {{ flight[4] }}</p>
+                        <p class="mb-1">Departure: {{ flight[5] }}</p>
+                        <p class="mb-0">Price: ${{ flight[7] }}</p>
+                        <a href="{{ url_for('book_flight', f_id=flight[0]) }}" class="btn btn-sm btn-primary mt-2">Book Now</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No upcoming flights</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="profile-form">
+                    <div class="mb-3">
+                        <label for="edit-name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="edit-name" value="{{ name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit-email" value="{{ email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="edit-phone" value="{{ phone }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-password" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="edit-password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('saveProfileBtn').addEventListener('click', function() {
+    const profileData = {
+        name: document.getElementById('edit-name').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        password: document.getElementById('edit-password').value
+    };
+    
+    fetch('/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            window.location.reload();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,11 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAIN</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center min-vh-75">
+        <div class="col-md-6">
+            <h1 class="display-4 mb-4">Welcome to Flight Booking System</h1>
+            <p class="lead mb-4">Book your flights easily and securely with our state-of-the-art booking system.</p>
+            <div class="d-grid gap-2 d-md-flex">
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Book Now</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/airplane.svg') }}" alt="Airplane" class="img-fluid">
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check display-4 text-primary mb-3"></i>
+                    <h3>Secure Booking</h3>
+                    <p>Book your flights with confidence using our secure payment system.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock display-4 text-primary mb-3"></i>
+                    <h3>24/7 Support</h3>
+                    <p>Our customer support team is available round the clock to assist you.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-tag display-4 text-primary mb-3"></i>
+                    <h3>Best Prices</h3>
+                    <p>Get the best deals on flights with our competitive pricing.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">Popular Destinations</h2>
+        </div>
+        <div class="col-md-3">
+            <div class="card destination-card">
+                <img src="{{ url_for('static', filename='images/destination1.jpg') }}" class="card-img-top" alt="Destination 1">
+                <div class="card-body">
+                    <h5 class="card-title">New York</h5>
+                    <p class="card-text">Starting from $299</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card destination-card">
+                <img src="{{ url_for('static', filename='images/destination2.jpg') }}" class="card-img-top" alt="Destination 2">
+                <div class="card-body">
+                    <h5 class="card-title">London</h5>
+                    <p class="card-text">Starting from $499</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card destination-card">
+                <img src="{{ url_for('static', filename='images/destination3.jpg') }}" class="card-img-top" alt="Destination 3">
+                <div class="card-body">
+                    <h5 class="card-title">Tokyo</h5>
+                    <p class="card-text">Starting from $699</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card destination-card">
+                <img src="{{ url_for('static', filename='images/destination4.jpg') }}" class="card-img-top" alt="Destination 4">
+                <div class="card-body">
+                    <h5 class="card-title">Paris</h5>
+                    <p class="card-text">Starting from $449</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

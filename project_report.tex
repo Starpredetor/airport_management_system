@@ -1,0 +1,139 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+
+\title{Flight Booking System\\Technical Documentation}
+\author{Project Documentation}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Overview}
+The Flight Booking System is a web-based application built using Flask that provides a comprehensive platform for managing flight bookings, user accounts, and administrative tasks.
+
+\section{Technical Stack}
+\begin{itemize}
+    \item \textbf{Backend Framework}: Flask 3.0.2
+    \item \textbf{Database}: SQLite3
+    \item \textbf{Authentication}: bcrypt 4.1.2
+    \item \textbf{Session Management}: Flask-Session 0.7.0
+    \item \textbf{Date Handling}: python-dateutil 2.9.0
+\end{itemize}
+
+\section{System Architecture}
+
+\subsection{User Roles}
+\subsubsection{Admin}
+\begin{itemize}
+    \item User management
+    \item System statistics
+    \item Database backup/restore
+\end{itemize}
+
+\subsubsection{Staff}
+\begin{itemize}
+    \item Flight management
+    \item Flight tracking
+\end{itemize}
+
+\subsubsection{Passengers}
+\begin{itemize}
+    \item Flight booking
+    \item Profile management
+    \item Ticket management
+\end{itemize}
+
+\section{Database Schema}
+\subsection{Passengers Table}
+\begin{itemize}
+    \item id (PRIMARY KEY)
+    \item username (UNIQUE)
+    \item password
+    \item name
+    \item phone
+    \item email
+\end{itemize}
+
+\subsection{Admin Table}
+\begin{itemize}
+    \item id (PRIMARY KEY)
+    \item username (UNIQUE)
+    \item password
+\end{itemize}
+
+\subsection{Employees Table}
+\begin{itemize}
+    \item id (PRIMARY KEY)
+    \item username (UNIQUE)
+    \item password
+    \item name
+\end{itemize}
+
+\section{Key Features}
+
+\subsection{Authentication System}
+\begin{itemize}
+    \item Secure password hashing using bcrypt
+    \item Session-based authentication
+    \item Role-based access control
+\end{itemize}
+
+\subsection{Flight Management}
+\begin{itemize}
+    \item CRUD operations for flights
+    \item Real-time seat tracking
+    \item Dynamic pricing based on seat class
+\end{itemize}
+
+\subsection{Booking System}
+\begin{itemize}
+    \item Interactive seat selection
+    \item Ticket generation
+    \item Booking history
+\end{itemize}
+
+\subsection{Administration}
+\begin{itemize}
+    \item User management interface
+    \item Database backup and restore
+    \item Statistical analysis and reporting
+\end{itemize}
+
+\section{Security Features}
+\begin{itemize}
+    \item Password hashing
+    \item Session management
+    \item Input validation
+    \item Error logging
+\end{itemize}
+
+\section{Project Structure}
+\begin{verbatim}
+project/
+├── try.py              # Main application file
+├── init_db.py         # Database initialization
+├── view_db.py         # Database viewer
+├── templates/         # HTML templates
+│   ├── admin_dashboard/
+│   ├── employee_dashboard/
+│   └── passenger_dashboard/
+├── static/           # Static assets
+└── database.db      # SQLite database
+\end{verbatim}
+
+\section{Future Enhancements}
+\begin{enumerate}
+    \item Payment gateway integration
+    \item Email notifications
+    \item Mobile application
+    \item API documentation
+    \item Enhanced analytics
+\end{enumerate}
+
+\end{document}

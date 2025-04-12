@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Flight{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Add New Flight</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_flight') }}" id="add-flight-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="flight_number" class="form-label">Flight Number</label>
+                            <input type="text" class="form-control" id="flight_number" name="flight_number" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="flight_name" class="form-label">Flight Name</label>
+                            <input type="text" class="form-control" id="flight_name" name="flight_name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="source" class="form-label">Source</label>
+                            <input type="text" class="form-control" id="source" name="source" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="destination" class="form-label">Destination</label>
+                            <input type="text" class="form-control" id="destination" name="destination" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="departure" class="form-label">Departure Time</label>
+                            <input type="datetime-local" class="form-control" id="departure" name="departure" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="arrival" class="form-label">Arrival Time</label>
+                            <input type="datetime-local" class="form-control" id="arrival" name="arrival" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Base Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="capacity" class="form-label">Capacity</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Available Classes</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="economy" checked>
+                                <label class="form-check-label" for="economy">Economy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="business">
+                                <label class="form-check-label" for="business">Business</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="first">
+                                <label class="form-check-label" for="first">First Class</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Add Flight</button>
+                        <a href="{{ url_for('flights') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
