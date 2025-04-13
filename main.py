@@ -3,13 +3,11 @@ import bcrypt
 from flask_session import Session
 import sqlite3
 from datetime import datetime
-import shutil
-import os
 from dateutil.relativedelta import relativedelta
 from datetime import timedelta
 from datetime import datetime, timedelta
-import math
 import logging
+
 
 app = Flask(__name__)
 app.secret_key = 'secret_key'
@@ -20,92 +18,6 @@ Session(app)
 
 # Set up logging
 app.logger.setLevel(logging.ERROR)
-
-def init_db():
-    try:
-        conn = sqlite3.connect('database.db')
-        print("Opened database successfully")
-        
-        # Create tables if they don't exist
-        conn.execute('''CREATE TABLE IF NOT EXISTS passengers
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 username TEXT NOT NULL UNIQUE,
-                 password TEXT NOT NULL,
-                 name TEXT NOT NULL,
-                 phone TEXT NOT NULL,
-                 email TEXT NOT NULL)''')
-        print("Passengers table created successfully")
-        
-        conn.execute('''CREATE TABLE IF NOT EXISTS admin
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 username TEXT NOT NULL UNIQUE,
-                 password TEXT NOT NULL)''')
-        print("Admin table created successfully")
-        
-        conn.execute('''CREATE TABLE IF NOT EXISTS employees
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 username TEXT NOT NULL UNIQUE,
-                 password TEXT NOT NULL,
-                 name TEXT NOT NULL)''')
-        print("Employees table created successfully")
-        
-        conn.execute('''CREATE TABLE IF NOT EXISTS flights
-                 (f_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 flight_number TEXT NOT NULL,
-                 flight_name TEXT NOT NULL,
-                 source TEXT NOT NULL,
-                 destination TEXT NOT NULL,
-                 departure TEXT NOT NULL,
-                 arrival TEXT NOT NULL,
-                 price REAL NOT NULL)''')
-        print("Flights table created successfully")
-        
-        conn.execute('''CREATE TABLE IF NOT EXISTS tickets
-                 (t_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 p_id INTEGER NOT NULL,
-                 f_id INTEGER NOT NULL,
-                 price REAL NOT NULL,
-                 class TEXT NOT NULL,
-                 seat TEXT NOT NULL,
-                 travel_date DATE NOT NULL,
-                 passenger_name TEXT NOT NULL,
-                 passenger_age INTEGER NOT NULL,
-                 passenger_gender TEXT NOT NULL,
-                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                 FOREIGN KEY(p_id) REFERENCES passengers(id),
-                 FOREIGN KEY(f_id) REFERENCES flights(f_id))''')
-        print("Tickets table created successfully")
-        
-        # Check if admin account exists, create if it doesn't
-        c = conn.cursor()
-        c.execute('''SELECT * FROM admin WHERE username = 'admin' ''')
-        if not c.fetchone():
-            c.execute('''INSERT INTO admin (username, password) VALUES (?, ?)''',
-                     ('admin', bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())))
-            conn.commit()
-            print("Default admin account created")
-        
-        # Check if staff account exists, create if it doesn't
-        c.execute('''SELECT * FROM employees WHERE username = 'staff' ''')
-        if not c.fetchone():
-            c.execute('''INSERT INTO employees (username, password, name) VALUES (?, ?, ?)''',
-                     ('staff', bcrypt.hashpw('staff123'.encode('utf-8'), bcrypt.gensalt()), 'John Staff'))
-            conn.commit()
-            print("Default staff account created")
-        
-        # Check if passenger account exists, create if it doesn't
-        c.execute('''SELECT * FROM passengers WHERE username = 'alen' ''')
-        if not c.fetchone():
-            c.execute('''INSERT INTO passengers (username, password, name, phone, email) VALUES (?, ?, ?, ?, ?)''',
-                     ('alen', bcrypt.hashpw('alen123'.encode('utf-8'), bcrypt.gensalt()), 'barry allen', '1234567891', 'allen@gmail.com'))
-            conn.commit()
-            print("Default passenger account created")
-        
-        conn.close()
-        print("Database initialization completed successfully!")
-    except Exception as e:
-        print(f"Error initializing database: {str(e)}")
-        raise e
 
 @app.route('/')
 def index():
@@ -739,5 +651,4 @@ def get_active_flights():
         return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    init_db()  # Initialize database on startup
     app.run(debug=True)
