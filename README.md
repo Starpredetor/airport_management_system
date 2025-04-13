@@ -35,7 +35,7 @@ A web-based flight booking system built with Flask that allows passengers to boo
 
 3. Run the application:
    ```bash
-   python try.py
+   python main.py
    ```
 
 4. Access the application:
@@ -47,7 +47,7 @@ A web-based flight booking system built with Flask that allows passengers to boo
 
 ## Project Structure
 
-- `try.py`: Main application file
+- `main.py`: Main application file
 - `templates/`: HTML templates
   - `admin_dashboard/`: Admin interface
   - `passenger_dashboard/`: Passenger interface

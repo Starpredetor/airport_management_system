@@ -76,9 +76,9 @@ The Flight Booking System is a web-based application built using Flask that prov
 ## Project Structure
 ```
 project/
-├── try.py              # Main application file
-├── init_db.py         # Database initialization
-├── view_db.py         # Database viewer
+├── main.py              # Main application file         
+├── database/         # HTML templates
+│   ├── db.py/         # CLI Database manager
 ├── templates/         # HTML templates
 │   ├── admin_dashboard/
 │   ├── employee_dashboard/
