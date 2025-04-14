@@ -3,9 +3,10 @@ import bcrypt
 import sys
 from datetime import datetime, timedelta
 
+DB_PATH = '../database.db'
 
 def init_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     # Create passengers table
@@ -71,7 +72,7 @@ def init_db():
     print("Database initialized successfully!")
     conn.commit()
     conn.close()
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
     # Clear existing flights
@@ -174,7 +175,7 @@ def init_db():
     print(f"Successfully inserted {len(flights)} flights!")
 
 def reset_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     # Drop all tables
@@ -217,16 +218,19 @@ def view_database():
     conn.close()
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == 'reset':
-        reset_db()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'init':
-        init_db()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'view':
-        view_database()
-    else:
-        print("Usage: python init_db.py [reset|init|view]")
-        sys.exit(1)
-
+    commands = {
+        'reset': reset_db,
+        'init': init_db,
+        'view': view_database
+    }
+    if len(sys.argv) == 2:
+        command = sys.argv[1]
+        if command in commands:
+            commands[command]()
+        else:
+            print(f"Unknown command: {command}")
+            print("Available commands: reset, init, view")
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()
