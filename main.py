@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import timedelta
 from datetime import datetime, timedelta
 import logging
+import json
 
 
 app = Flask(__name__)
@@ -16,7 +17,6 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 Session(app)
 
-# Set up logging
 app.logger.setLevel(logging.ERROR)
 
 @app.route('/')
@@ -27,7 +27,7 @@ def index():
             c.execute('''SELECT * FROM flights''')
             flights = c.fetchall()
             
-            # Get user-specific data based on role
+            
             if session['role'] == 'PASSENGER':
                 c.execute('''SELECT COUNT(*) FROM tickets WHERE p_id = ?''', (session['username'],))
                 ticket_count = c.fetchone()[0]
@@ -35,16 +35,15 @@ def index():
             elif session['role'] == 'STAFF':
                 return render_template('employee_dashboard/index.html', flights=flights)
             elif session['role'] == 'ADMIN':
-                # Get admin dashboard stats
                 c.execute('''SELECT COUNT(*) FROM passengers''')
                 total_users = c.fetchone()[0]
                 c.execute('''SELECT COUNT(*) FROM flights''')
                 active_flights = c.fetchone()[0]
                 c.execute('''SELECT COUNT(*) FROM tickets''')
                 total_bookings = c.fetchone()[0]
-                # Calculate total revenue (sum of ticket prices)
                 c.execute('''SELECT SUM(price) FROM tickets''')
                 total_revenue = c.fetchone()[0] or 0
+
                 return render_template('admin_dashboard/index.html', 
                                     flights=flights,
                                     total_users=total_users,
@@ -200,7 +199,7 @@ def book_flight(f_id):
                 flight = c.fetchone()
                 c.close()
             today = datetime.now().strftime('%Y-%m-%d')
-            max_date = (datetime.now() + timedelta(days=180)).strftime('%Y-%m-%d')  # Allow booking up to 6 months in advance
+            max_date = (datetime.now() + timedelta(days=180)).strftime('%Y-%m-%d') 
             return render_template('passenger_dashboard/book_flight.html', flight=flight, today=today, max_date=max_date)
     else:
         return redirect(url_for('login'))
@@ -242,16 +241,16 @@ def backup_database():
         import shutil
         import os
         
-        # Create backups directory if it doesn't exist
         if not os.path.exists('backups'):
             os.makedirs('backups')
             
-        # Generate backup filename with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        tstamp = datetime.now()
         backup_file = f'backups/database_backup_{timestamp}.db'
+        with open('configs.json', 'w') as f:
+            json.dump({"system_health": {"last_database_backup": tstamp}}, f)
         
         try:
-            # Copy the database file
             shutil.copy2('database.db', backup_file)
             return jsonify({'status': 'success', 'message': f'Backup created successfully: {backup_file}', 'file': backup_file})
         except Exception as e:
@@ -286,16 +285,13 @@ def restore_backup(filename):
         backup_file = os.path.join('backups', filename)
         if os.path.exists(backup_file):
             try:
-                # Stop all database connections first
                 import sqlite3
                 sqlite3.connect('database.db').close()
                 
-                # Create a backup of current database before restore
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 pre_restore_backup = f'backups/pre_restore_backup_{timestamp}.db'
                 shutil.copy2('database.db', pre_restore_backup)
                 
-                # Restore the selected backup
                 shutil.copy2(backup_file, 'database.db')
                 return jsonify({'status': 'success', 'message': f'Database restored from {filename}'})
             except Exception as e:
@@ -308,7 +304,6 @@ def list_users():
     if 'loggedin' in session and session['role'] == 'ADMIN':
         with sqlite3.connect('database.db') as conn:
             c = conn.cursor()
-            # Get all users from different tables
             c.execute('''SELECT 'PASSENGER' as role, id, username, name, email, phone 
                         FROM passengers''')
             passengers = c.fetchall()
@@ -321,7 +316,6 @@ def list_users():
                         FROM admin''')
             admins = c.fetchall()
             
-            # Combine all users
             users = passengers + employees + admins
             c.close()
             
@@ -381,7 +375,6 @@ def delete_user():
                 elif role == 'STAFF':
                     c.execute('DELETE FROM employees WHERE id = ?', (user_id,))
                 elif role == 'ADMIN':
-                    # Prevent deleting the last admin
                     c.execute('SELECT COUNT(*) FROM admin')
                     admin_count = c.fetchone()[0]
                     if admin_count <= 1:
@@ -459,16 +452,15 @@ def update_profile():
         with sqlite3.connect('database.db') as conn:
             c = conn.cursor()
             
-            # Update based on user role
             if session['role'] == 'PASSENGER':
-                if data['password']:  # If password is being updated
+                if data['password']:  
                     c.execute('''UPDATE passengers 
                                 SET name=?, phone=?, email=?, password=?
                                 WHERE username=?''',
                              (data['name'], data['phone'], data['email'],
                               bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()),
                               session['username']))
-                else:  # If password is not being updated
+                else:  
                     c.execute('''UPDATE passengers 
                                 SET name=?, phone=?, email=?
                                 WHERE username=?''',
@@ -515,12 +507,10 @@ def admin_stats(period):
             revenue = []
             
             if period == 'daily':
-                # Get stats for last 7 days
                 for i in range(6, -1, -1):
                     date = today - timedelta(days=i)
                     labels.append(date.strftime('%Y-%m-%d'))
                     
-                    # Get bookings for this day
                     c.execute('''SELECT COUNT(*), COALESCE(SUM(price), 0) 
                                 FROM tickets 
                                 WHERE date(created_at) = date(?)''', 
@@ -530,7 +520,6 @@ def admin_stats(period):
                     revenue.append(float(total or 0))
                     
             elif period == 'weekly':
-                # Get stats for last 4 weeks
                 for i in range(3, -1, -1):
                     start_date = today - timedelta(weeks=i)
                     end_date = start_date + timedelta(days=6)
@@ -545,7 +534,6 @@ def admin_stats(period):
                     revenue.append(float(total or 0))
                     
             elif period == 'monthly':
-                # Get stats for last 6 months
                 for i in range(5, -1, -1):
                     date = today.replace(day=1) - relativedelta(months=i)
                     labels.append(date.strftime('%B %Y'))
@@ -590,10 +578,8 @@ def get_active_flights():
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         
-        # Get current time
         current_time = datetime.now()
         
-        # Get flights within a 24-hour window
         c.execute('''
             SELECT f_id, flight_number, flight_name, source, destination, departure, arrival, price 
             FROM flights 
@@ -613,7 +599,6 @@ def get_active_flights():
                 arrival_time = datetime.strptime(flight[6], '%Y-%m-%d %H:%M')
                 flight_duration = (arrival_time - departure_time).total_seconds()
                 
-                # Calculate progress
                 if current_time < departure_time:
                     progress = 0
                     status = 'Scheduled'
@@ -625,8 +610,6 @@ def get_active_flights():
                     progress = min(elapsed / flight_duration, 1)
                     status = 'In Air'
                     
-                    # Add random delay for some flights
-                    if flight[0] % 4 == 0:  # 25% chance of delay
                         progress = max(0, progress - 0.1)
                         status = 'Delayed'
                 
