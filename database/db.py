@@ -50,6 +50,10 @@ def init_db():
                  price REAL NOT NULL,
                  class TEXT NOT NULL,
                  seat TEXT NOT NULL,
+                 travel_date DATE,
+                 passenger_name TEXT,
+                 passenger_age NUMBER,
+                 passenger_gender TEXT,
                  FOREIGN KEY (p_id) REFERENCES passengers (username),
                  FOREIGN KEY (f_id) REFERENCES flights (f_id))''')
 
