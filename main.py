@@ -2,10 +2,8 @@ from flask import Flask, render_template, request, url_for, session, redirect, j
 import bcrypt
 from flask_session import Session
 import sqlite3
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from datetime import timedelta
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import logging
 import json
 
@@ -50,7 +48,6 @@ def index():
                                     active_flights=active_flights,
                                     total_bookings=total_bookings,
                                     total_revenue=total_revenue)
-            c.close()
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
@@ -64,7 +61,6 @@ def login():
             c = conn.cursor()
             c.execute('''SELECT * FROM passengers WHERE username = ?''', (username,))
             user = c.fetchone()
-            c.close()
         if user and bcrypt.checkpw(password.encode('utf-8'), user[2]):
             session['loggedin'] = True
             session['username'] = user[1]
@@ -98,7 +94,6 @@ def register():
             c.execute('''INSERT INTO passengers (username, password, name, phone, email) VALUES (?, ?, ?, ?, ?)''', 
                      (username, bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()), name, phone, email))
             conn.commit()
-            c.close()
         return redirect(url_for('login'))
     if request.method == 'GET':
         return render_template('passenger/register.html')
@@ -114,7 +109,6 @@ def admin_login():
             c = conn.cursor()
             c.execute('''SELECT * FROM admin WHERE username = ?''', (username,))
             user = c.fetchone()
-            c.close()
         if user and bcrypt.checkpw(password.encode('utf-8'), user[2]):
             session['loggedin'] = True
             session['username'] = user[1]
@@ -139,7 +133,6 @@ def employee_login():
             c = conn.cursor()
             c.execute('''SELECT * FROM employees WHERE username = ?''', (username,))
             user = c.fetchone()
-            c.close()
         if user and bcrypt.checkpw(password.encode('utf-8'), user[2]):
             session['loggedin'] = True
             session['username'] = user[1]
@@ -160,7 +153,6 @@ def tickets():
             c = conn.cursor()
             c.execute('''SELECT * FROM tickets WHERE p_id = ?''', (session['username'],))
             tickets = c.fetchall()
-            c.close()
         return render_template('passenger_dashboard/tickets.html', tickets=tickets)
     else:
         return redirect(url_for('login'))
@@ -172,7 +164,6 @@ def flights():
             c = conn.cursor()
             c.execute('''SELECT * FROM flights''')
             flights = c.fetchall()
-            c.close()
         return render_template('passenger_dashboard/flights.html', flights=flights)
     else:
         return redirect(url_for('login'))
@@ -190,14 +181,12 @@ def book_flight(f_id):
                           request.form['seat'], request.form['travel_date'], request.form['passenger_name'],
                           request.form['passenger_age'], request.form['passenger_gender']))
                 conn.commit()
-                c.close()
             return redirect(url_for('tickets'))
         if request.method == 'GET':
             with sqlite3.connect('database.db') as conn:
                 c = conn.cursor()
                 c.execute('''SELECT * FROM flights WHERE f_id = ?''', (f_id,))
                 flight = c.fetchone()
-                c.close()
             today = datetime.now().strftime('%Y-%m-%d')
             max_date = (datetime.now() + timedelta(days=180)).strftime('%Y-%m-%d') 
             return render_template('passenger_dashboard/book_flight.html', flight=flight, today=today, max_date=max_date)
@@ -215,7 +204,6 @@ def add_flight():
                          (request.form['flight_number'], request.form['flight_name'], request.form['source'], 
                           request.form['destination'], request.form['departure'], request.form['arrival'], request.form['price']))
                 conn.commit()
-                c.close()
             return redirect(url_for('flights'))
         if request.method == 'GET':
             return render_template('employee_dashboard/add_flight.html')
@@ -229,7 +217,6 @@ def delete_flight(f_id):
             c = conn.cursor()
             c.execute('''DELETE FROM flights WHERE f_id = ?''', (f_id,))
             conn.commit()
-            c.close()
         return redirect(url_for('flights'))
     else:
         return redirect(url_for('login'))
@@ -245,7 +232,7 @@ def backup_database():
             os.makedirs('backups')
             
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        tstamp = datetime.now()
+        tstamp = datetime.now().isoformat()
         backup_file = f'backups/database_backup_{timestamp}.db'
         with open('configs.json', 'w') as f:
             json.dump({"system_health": {"last_database_backup": tstamp}}, f)
@@ -609,9 +596,6 @@ def get_active_flights():
                     elapsed = (current_time - departure_time).total_seconds()
                     progress = min(elapsed / flight_duration, 1)
                     status = 'In Air'
-                    
-                        progress = max(0, progress - 0.1)
-                        status = 'Delayed'
                 
                 active_flights.append({
                     'flight_number': flight[1],
