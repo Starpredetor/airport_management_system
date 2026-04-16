@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        // 🔴 CHANGE THIS PATH based on your system
+        PYTHON = "C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
         VENV = "venv"
     }
 
@@ -9,14 +11,13 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                // Jenkins automatically clones the repo where this Jenkinsfile exists
                 checkout scm
             }
         }
 
         stage('Setup Virtual Environment') {
             steps {
-                bat 'python -m venv %VENV%'
+                bat '"%PYTHON%" -m venv %VENV%'
             }
         }
 
