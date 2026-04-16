@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         // 🔴 CHANGE THIS PATH based on your system
-        PYTHON = "py"
         VENV = "venv"
     }
 
@@ -17,7 +16,7 @@ pipeline {
 
         stage('Setup Virtual Environment') {
             steps {
-                bat '"%PYTHON%" -m venv %VENV%'
+                bat 'py -m venv %VENV%'
             }
         }
 
