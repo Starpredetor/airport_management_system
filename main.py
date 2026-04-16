@@ -15,6 +15,9 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 Session(app)
 
+
+## added comment 
+
 app.logger.setLevel(logging.ERROR)
 
 @app.route('/')
